@@ -1,42 +1,50 @@
-// C++ code
-//
+#include <LiquidCrystal_I2C.h>
 
-void setup()
-{
- 
-  pinMode(A0,INPUT);
-  pinMode(5,OUTPUT);
-  pinMode(6,OUTPUT);
-  pinMode(7,OUTPUT);
-  pinMode(8,OUTPUT);
-  Serial.begin(9600);
+LiquidCrystal_I2C lcd(0x26,16,2); 
+
+const int soilMoisturePin = A0;
+const int blueLEDPin = 2;
+const int orangeLEDPin = 3;
+const int redLEDPin = 4;
+const int buzzerPin = 5;
+
+void setup() {
+  lcd.init();
+  lcd.backlight();
+  
+  pinMode(blueLEDPin, OUTPUT);
+  pinMode(orangeLEDPin, OUTPUT);
+  pinMode(redLEDPin, OUTPUT);
+  pinMode(buzzerPin, OUTPUT);
+  
+  lcd.setCursor(0, 0);
+  lcd.print("Moisture:");
 }
 
-void loop()
-{
-  int sensor_reading=analogRead(0);
-  Serial.print("moisture:");
-  Serial.println(sensor_reading);
-  if(sensor_reading<=150){
-    digitalWrite(8,HIGH);
-    tone(10,10000,50);
-    digitalWrite(7,HIGH);
-    digitalWrite(6,LOW);
-    digitalWrite(5,LOW);
+void loop() {
+  int moisture = analogRead(soilMoisturePin);
+  
+  lcd.setCursor(0, 1);
+  lcd.print("Moist: " + String(moisture) + "   ");
+
+  if (moisture > 500) {
+    digitalWrite(blueLEDPin, HIGH);
+    digitalWrite(orangeLEDPin, LOW);
+    digitalWrite(redLEDPin, LOW);
+  } 
+  else if (moisture >= 151) {
+    digitalWrite(blueLEDPin, LOW);
+    digitalWrite(orangeLEDPin, HIGH);
+    digitalWrite(redLEDPin, LOW);
+  } 
+  else {
+    digitalWrite(blueLEDPin, LOW);
+    digitalWrite(orangeLEDPin, LOW);
+    digitalWrite(redLEDPin, HIGH);
+    tone(buzzerPin, 1000);
+    delay(1000);
+    noTone(buzzerPin);
   }
-  if(sensor_reading>150 && sensor_reading<=600){
-    digitalWrite(8,LOW);
-    //tone(10,10000,50);
-    digitalWrite(7,LOW);
-    digitalWrite(6,HIGH);
-    digitalWrite(5,LOW);
-  }
-  if(sensor_reading>600){
-    digitalWrite(8,LOW);
-    //tone(10,10000,50);
-    digitalWrite(7,LOW);
-    digitalWrite(6,LOW);
-    digitalWrite(5,HIGH);
-  }
+
   delay(1000);
 }
